@@ -20,7 +20,7 @@ import           Control.Monad.Catch
 import           Control.Monad.IO.Class            (MonadIO)
 import           Control.Monad.Trans.Resource      (MonadResource (..))
 import qualified Data.ByteString.Lazy              as LBS
-import           Data.Conduit                      (($$+-))
+import           Data.Conduit                      (($$+-), sealConduitT)
 import qualified Data.Conduit.List                 as Conduit
 import           Data.Monoid                       (Dual (..), Endo (..), (<>))
 import qualified Data.Text.Encoding                as Text
@@ -62,7 +62,7 @@ perform Env{..} x = catches go handlers
 
         logDebug _envLogger rq -- debug:ClientRequest
 
-        rs      <- http rq _envManager
+        rs      <- fmap sealConduitT <$> http rq _envManager
 
         logDebug _envLogger rs -- debug:ClientResponse
 

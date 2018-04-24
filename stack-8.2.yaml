@@ -1,5 +1,4 @@
-compiler:   ghc-8.2
-resolver:   nightly-2017-08-12
+resolver:   lts-11.3
 flags:      {}
 extra-deps: []
 packages:

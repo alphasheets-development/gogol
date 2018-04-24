@@ -82,5 +82,7 @@ library
         , transformers         >= 0.2
         , transformers-base    >= 0.4
         , unordered-containers >= 0.2.5
+        , unliftio-core
+        , unliftio
         , x509                 >= 1.5
         , x509-store           >= 1.5
