@@ -1,4 +1,5 @@
-resolver:   lts-11.3
+system-ghc: true
+resolver:   lts-11.4
 flags:      {}
 extra-deps: []
 packages:

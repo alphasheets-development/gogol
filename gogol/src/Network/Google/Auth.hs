@@ -98,7 +98,7 @@ authToAuthorizedUser a = AuthorizedUser
                    <*>  maybe (Left "no refresh token") Right (_tokenRefresh (_token a))
                    <*>  (_clientSecret <$> getClient)
                         where getClient = case _credentials a of
-                                            FromClient c _ -> Right c
+                                            FromClient c _ _ -> Right c
                                             _ -> Left "not FromClient"
 
 -- | An 'OAuthToken' that can potentially be expired, with the original
@@ -125,10 +125,11 @@ newtype Store (s :: [Symbol]) = Store (MVar (Auth s))
 -- exchanged or refreshed.
 initStore :: (MonadIO m, MonadCatch m, AllowScopes s)
           => Credentials s
+          -> Maybe Text
           -> Logger
           -> Manager
           -> m (Store s)
-initStore c l m = exchange c l m >>= fmap Store . liftIO . newMVar
+initStore c t l m = exchange c t l m >>= fmap Store . liftIO . newMVar
 
 -- | Retrieve auth from storage
 retrieveAuthFromStore :: (MonadIO m, MonadCatch m, AllowScopes s)
@@ -160,16 +161,17 @@ getToken (Store s) l m = do
 -- suitable for authorizing requests.
 exchange :: forall m s. (MonadIO m, MonadCatch m, AllowScopes s)
          => Credentials s
+         -> Maybe Text
          -> Logger
          -> Manager
          -> m (Auth s)
-exchange c l = fmap (Auth c) . action l
+exchange c murl l = fmap (Auth c) . action l
   where
     action = case c of
-        FromMetadata s    -> metadataToken       s
-        FromAccount  a    -> serviceAccountToken a (Proxy :: Proxy s)
-        FromClient   x n  -> exchangeCode        x n
-        FromUser     u    -> authorizedUserToken u Nothing
+        FromMetadata s     -> metadataToken       s
+        FromAccount  a     -> serviceAccountToken a (Proxy :: Proxy s)
+        FromClient   x n _ -> exchangeCode        x n murl
+        FromUser     u     -> authorizedUserToken u Nothing
 
 -- | Refresh an existing 'OAuthToken'.
 refresh :: forall m s. (MonadIO m, MonadCatch m, AllowScopes s)
@@ -182,7 +184,7 @@ refresh (Auth c t) l = fmap (Auth c) . action l
     action = case c of
         FromMetadata s   -> metadataToken       s
         FromAccount  a   -> serviceAccountToken a (Proxy :: Proxy s)
-        FromClient   x _ -> refreshToken        x t
+        FromClient   x _ _ -> refreshToken        x t
         FromUser     u   -> authorizedUserToken u (_tokenRefresh t)
 
 -- | Apply the (by way of possible token refresh) a bearer token to the

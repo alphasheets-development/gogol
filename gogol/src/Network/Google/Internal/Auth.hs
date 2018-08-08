@@ -51,7 +51,7 @@ data Credentials (s :: [Symbol])
       -- ^ Obtain and refresh access tokens from the underlying GCE host metadata
       -- at @http:\/\/169.254.169.254@.
 
-    | FromClient !OAuthClient !(OAuthCode s)
+    | FromClient !OAuthClient !(OAuthCode s) (Maybe Text)
       -- ^ Obtain and refresh access tokens using the specified client secret
       -- and authorization code obtained from.
       --
@@ -71,6 +71,10 @@ data Credentials (s :: [Symbol])
       --
       -- An 'AuthorizedUser' is typically created by the @gcloud init@ command
       -- of the Google CloudSDK Tools.
+
+credentialsToUrl :: Credentials s -> Maybe Text
+credentialsToUrl (FromClient _ _ mt) = mt
+credentialsToUrl _ = Nothing
 
 {-| Service Account credentials which are typically generated/download
 from the Google Developer console of the following form:

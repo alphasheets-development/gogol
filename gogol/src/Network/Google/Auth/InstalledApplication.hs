@@ -79,7 +79,7 @@ import qualified Network.HTTP.Conduit           as Client
 -- This ensures the scopes passed to 'formURL' and the type of 'OAuthCode' 's'
 -- are correct.
 installedApplication :: OAuthClient -> OAuthCode s -> Credentials s
-installedApplication = FromClient
+installedApplication a b = FromClient a b Nothing
 
 -- /See:/ <https://developers.google.com/identity/protocols/OAuth2WebServer#offline>
 data AccessType = Online | Offline deriving (Show, Eq)
@@ -125,18 +125,21 @@ formAccessTypeURLWith c a ss = formURLWith c ss
 exchangeCode :: (MonadIO m, MonadCatch m)
              => OAuthClient
              -> (OAuthCode s)
+             -> Maybe Text
              -> Logger
              -> Manager
              -> m (OAuthToken s)
-exchangeCode c n = refreshRequest $
+exchangeCode c n muri = refreshRequest $
     tokenRequest
         { Client.requestBody = textBody $
                "grant_type=authorization_code"
             <> "&client_id="     <> toQueryParam (_clientId     c)
             <> "&client_secret=" <> toQueryParam (_clientSecret c)
             <> "&code="          <> toQueryParam n
-            <> "&redirect_uri="  <> redirectURI
+            <> "&redirect_uri="  <> uri
         }
+  where
+    uri = fromMaybe redirectURI muri
 
 -- | Perform a refresh to obtain a valid 'OAuthToken' with a new expiry time.
 --

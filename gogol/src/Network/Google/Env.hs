@@ -25,6 +25,7 @@ import Data.Monoid                    (Dual (..), Endo (..))
 import Data.Proxy                     (Proxy (..))
 import GHC.TypeLits                   (Symbol)
 import Network.Google.Auth
+import Network.Google.Internal.Auth   (credentialsToUrl)
 import Network.Google.Internal.Logger (Logger)
 import Network.Google.Types
 import Network.HTTP.Conduit           (Manager, newManager, tlsManagerSettings)
@@ -140,4 +141,4 @@ newEnvWith :: (MonadIO m, MonadCatch m, AllowScopes s)
            -> Logger
            -> Manager
            -> m (Env s)
-newEnvWith c l m = Env mempty l m <$> initStore c l m
+newEnvWith c l m = Env mempty l m <$> initStore c (credentialsToUrl c) l m
