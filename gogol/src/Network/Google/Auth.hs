@@ -67,6 +67,8 @@ module Network.Google.Auth
     , ServiceId      (..)
     , ClientId       (..)
 
+    , AuthorizedUser
+
     -- * Re-exported Modules
     , module Network.Google.Auth.Scope
     ) where
